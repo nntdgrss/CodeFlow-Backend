@@ -1,0 +1,22 @@
+{
+	"name": "app",
+	"version": "1.0.50",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"dev": "bun run --watch src/index.ts",
+		"build": "bun build \t--compile \t--minify-whitespace \t--minify-syntax \t--target bun \t--outfile server \t./src/index.ts"
+	},
+	"dependencies": {
+		"@prisma/client": "^6.5.0",
+		"bcrypt": "^5.1.1",
+		"elysia": "latest",
+		"jsonwebtoken": "^9.0.2"
+	},
+	"devDependencies": {
+		"@types/bcrypt": "^5.0.2",
+		"@types/jsonwebtoken": "^9.0.9",
+		"bun-types": "latest",
+		"prisma": "^6.5.0"
+	},
+	"module": "src/index.js"
+}
