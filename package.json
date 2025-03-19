@@ -7,10 +7,14 @@
 		"build": "bun build \t--compile \t--minify-whitespace \t--minify-syntax \t--target bun \t--outfile server \t./src/index.ts"
 	},
 	"dependencies": {
+		"@elysiajs/cookie": "^0.8.0",
+		"@elysiajs/cors": "^1.2.0",
+		"@elysiajs/jwt": "^1.2.0",
 		"@prisma/client": "^6.5.0",
 		"bcrypt": "^5.1.1",
 		"elysia": "latest",
-		"jsonwebtoken": "^9.0.2"
+		"jsonwebtoken": "^9.0.2",
+		"jwt-decode": "^4.0.0"
 	},
 	"devDependencies": {
 		"@types/bcrypt": "^5.0.2",

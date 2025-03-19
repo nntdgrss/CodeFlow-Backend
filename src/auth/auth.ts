@@ -5,25 +5,36 @@ import { comparePassword, hashPassword } from '../utils/password'
 import { LoginDto, RegisterDto } from './models'
 
 export const auth = new Elysia({ prefix: '/auth' })
-	.post('/register', async ({ body }) => {
+	.post('/register', async ({ body, set }) => {
 		const { email, password, firstname, lastname, username } =
 			body as RegisterDto
 
 		if (!email || !password || !firstname || !lastname || !username) {
+			set.status = 400
 			return {
-				status: 400,
 				message: 'Пожалуйста, заполните все поля',
 			}
 		}
 
-		const existingUser = await prisma.user.findUnique({
-			where: { email, username },
+		const existingUserEmail = await prisma.user.findUnique({
+			where: { email },
 		})
 
-		if (existingUser) {
+		if (existingUserEmail) {
+			set.status = 409
 			return {
-				status: 409,
 				message: 'Пользователь с таким email уже существует',
+			}
+		}
+
+		const existingUsername = await prisma.user.findUnique({
+			where: { username },
+		})
+
+		if (existingUsername) {
+			set.status = 409
+			return {
+				message: 'Пользователь с таким именем уже существует',
 			}
 		}
 
@@ -39,7 +50,17 @@ export const auth = new Elysia({ prefix: '/auth' })
 			},
 		})
 
-		const accessToken = generateToken({ id: user.id, email: user.email })
+		const token = generateToken({ id: user.id, email: user.email })
+
+		set.cookie = {
+			'next-auth.session-token': {
+				value: token,
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'strict',
+				path: '/',
+			},
+		}
 
 		return {
 			user: {
@@ -49,15 +70,15 @@ export const auth = new Elysia({ prefix: '/auth' })
 				lastName: user.lastName,
 				username: user.username,
 			},
-			token: accessToken,
+			token,
 		}
 	})
-	.post('/login', async ({ body }) => {
+	.post('/login', async ({ body, set }) => {
 		const { email, password } = body as LoginDto
 
 		if (!email || !password) {
+			set.status = 400
 			return {
-				status: 400,
 				message: 'Пожалуйста, заполните все поля',
 			}
 		}
@@ -75,13 +96,23 @@ export const auth = new Elysia({ prefix: '/auth' })
 		const isPasswordValid = await comparePassword(password, user.password)
 
 		if (!isPasswordValid) {
+			set.status = 401
 			return {
-				status: 401,
 				message: 'Неверный email или пароль',
 			}
 		}
 
-		const accessToken = generateToken({ id: user.id, email: user.email })
+		const token = generateToken({ id: user.id, email: user.email })
+
+		set.cookie = {
+			'next-auth.session-token': {
+				value: token,
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'strict',
+				path: '/',
+			},
+		}
 
 		return {
 			user: {
@@ -91,6 +122,6 @@ export const auth = new Elysia({ prefix: '/auth' })
 				lastName: user.lastName,
 				username: user.username,
 			},
-			token: accessToken,
+			token,
 		}
 	})
